@@ -4,7 +4,8 @@
 
 class UrlCorpus
 {
-
+public:
+    void getCorpus(const char* url, const char* path);
 };
 
 
