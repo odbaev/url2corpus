@@ -14,13 +14,13 @@ class UrlCorpus
 public:
     UrlCorpus();
     ~UrlCorpus();
-    void getCorpus(const char* url, const char* path);
+    void getCorpus(string url, string path);
 
 private:
     static size_t writeCallback(char* contents, size_t size, size_t nmemb, string* userp);
-    string getHtml(const char* url);
-    map<string, string> getUrls(string& html, char* effurl);
-    void writeCorpusInfo(const char* path, char* url, map<string, string>& urls);
+    string getHtml(string url);
+    map<string, string> getUrls(string& html, string main_url);
+    void writeCorpusInfo(string path, string main_url, map<string, string>& urls);
 
     CURL* curl;
     HTML::ParserDom parser;

@@ -1,7 +1,5 @@
 #include "UrlCorpus.h"
 #include <algorithm>
-#include <regex>
-
 #include <fstream>
 #include <sys/stat.h>
 
@@ -19,18 +17,20 @@ UrlCorpus::~UrlCorpus()
 }
 
 
-void UrlCorpus::getCorpus(const char* url, const char* path)
+void UrlCorpus::getCorpus(string url, string path)
 {
     string html = getHtml(url);
 
     char* effurl;
     curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effurl);
 
-    map<string, string> urls = getUrls(html, effurl);
+    url = effurl;
 
-    mkdir(path, ACCESSPERMS);
+    map<string, string> urls = getUrls(html, url);
 
-    writeCorpusInfo(path, effurl, urls);
+    mkdir(path.c_str(), ACCESSPERMS);
+
+    writeCorpusInfo(path, url, urls);
 }
 
 size_t UrlCorpus::writeCallback(char* contents, size_t size, size_t nmemb, string* userp)
@@ -39,22 +39,21 @@ size_t UrlCorpus::writeCallback(char* contents, size_t size, size_t nmemb, strin
     return size * nmemb;
 }
 
-string UrlCorpus::getHtml(const char* url)
+string UrlCorpus::getHtml(string url)
 {
     string html;
 
-    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &html);
     curl_easy_perform(curl);
 
     return html;
 }
 
-map<string, string> UrlCorpus::getUrls(string& html, char* effurl)
+map<string, string> UrlCorpus::getUrls(string& html, string main_url)
 {
     map<string, string> urls;
-    string url;
-    string desc;
+    string url, desc;
 
     tree<HTML::Node> dom = parser.parseTree(html);
 
@@ -67,13 +66,13 @@ map<string, string> UrlCorpus::getUrls(string& html, char* effurl)
             {
                 url = it->attribute("href").second;
 
-                bool absurl = url.compare(0, strlen(effurl), effurl) == 0;
+                bool absurl = url.compare(0, main_url.length(), main_url) == 0;
 
                 if (url.length() > 1 && url.front() == '/' || absurl)
                 {
                     if (url.find_last_of("#?;") == string::npos)
                     {
-                        if (absurl) url.erase(0, strlen(effurl) - 1);
+                        if (absurl) url.erase(0, main_url.length() - 1);
 
                         long slashes = count(url.begin(), url.end(), '/');
 
@@ -107,11 +106,11 @@ map<string, string> UrlCorpus::getUrls(string& html, char* effurl)
     return urls;
 }
 
-void UrlCorpus::writeCorpusInfo(const char* path, char* url, map<string, string>& urls)
+void UrlCorpus::writeCorpusInfo(string path, string main_url, map<string, string>& urls)
 {
-    ofstream out(string(path) + "/corpus-info.txt");
+    ofstream out(path + "/corpus-info.txt");
 
-    out << url << "\n" << endl;
+    out << main_url << "\n" << endl;
 
     int i = 1;
     for(map<string, string>::iterator it = urls.begin(); it != urls.end(); it++)
