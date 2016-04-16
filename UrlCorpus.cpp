@@ -30,6 +30,30 @@ void UrlCorpus::getCorpus(string url, string path)
 
     mkdir(path.c_str(), ACCESSPERMS);
 
+    string article;
+
+    int i = 1;
+    for(map<string, string>::iterator it = urls.begin(); it != urls.end();)
+    {
+        html = getHtml(url + it->first);
+
+        article = getArticle(html);
+
+        if (article.empty())
+        {
+            it = urls.erase(it);
+            continue;
+        }
+
+        ofstream out(path + '/' + to_string(i++) + ".txt");
+
+        out << article << endl;
+
+        out.close();
+
+        it++;
+    }
+
     writeCorpusInfo(path, url, urls);
 }
 
@@ -106,6 +130,15 @@ map<string, string> UrlCorpus::getUrls(string& html, string main_url)
     return urls;
 }
 
+string UrlCorpus::getArticle(string html)
+{
+    string article;
+
+
+
+    return article;
+}
+
 void UrlCorpus::writeCorpusInfo(string path, string main_url, map<string, string>& urls)
 {
     ofstream out(path + "/corpus-info.txt");
@@ -122,6 +155,9 @@ void UrlCorpus::writeCorpusInfo(string path, string main_url, map<string, string
 
     out.close();
 }
+
+
+
 
 
 
