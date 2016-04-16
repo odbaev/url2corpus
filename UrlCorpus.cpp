@@ -3,6 +3,8 @@
 #include <regex>
 
 #include <fstream>
+#include <sys/stat.h>
+
 
 UrlCorpus::UrlCorpus()
 {
@@ -25,7 +27,9 @@ void UrlCorpus::getCorpus(const char* url, const char* path)
 
     map<string, string> urls = getUrls(html, effurl);
 
+    mkdir(path, ACCESSPERMS);
 
+    writeCorpusInfo(path, effurl, urls);
 }
 
 size_t UrlCorpus::writeCallback(char* contents, size_t size, size_t nmemb, string* userp)
@@ -103,6 +107,23 @@ map<string, string> UrlCorpus::getUrls(string& html, char* effurl)
 
     return urls;
 }
+
+void UrlCorpus::writeCorpusInfo(const char* path, char* url, map<string, string>& urls)
+{
+    ofstream out(string(path) + "/corpus-info.txt");
+
+    out << url << "\n" << endl;
+
+    for(map<string, string>::iterator it = urls.begin(); it != urls.end(); it++)
+    {
+        out << "URL: " << it->first << endl;
+        out << "Description: " << it->second << "\n" << endl;
+    }
+
+    out.close();
+}
+
+
 
 
 

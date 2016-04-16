@@ -20,6 +20,7 @@ private:
     static size_t writeCallback(char* contents, size_t size, size_t nmemb, string* userp);
     string getHtml(const char* url, char** effurl);
     map<string, string> getUrls(string& html, char* effurl);
+    void writeCorpusInfo(const char* path, char* url, map<string, string>& urls);
 
     CURL* curl;
     HTML::ParserDom parser;
