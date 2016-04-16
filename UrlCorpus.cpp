@@ -21,9 +21,10 @@ UrlCorpus::~UrlCorpus()
 
 void UrlCorpus::getCorpus(const char* url, const char* path)
 {
-    char* effurl;
+    string html = getHtml(url);
 
-    string html = getHtml(url, &effurl);
+    char* effurl;
+    curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effurl);
 
     map<string, string> urls = getUrls(html, effurl);
 
@@ -38,15 +39,13 @@ size_t UrlCorpus::writeCallback(char* contents, size_t size, size_t nmemb, strin
     return size * nmemb;
 }
 
-string UrlCorpus::getHtml(const char* url, char** effurl)
+string UrlCorpus::getHtml(const char* url)
 {
     string html;
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &html);
     curl_easy_perform(curl);
-
-    curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, effurl);
 
     return html;
 }
