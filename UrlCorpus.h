@@ -3,8 +3,11 @@
 
 #include <iostream>
 #include <curl/curl.h>
+#include <htmlcxx/html/ParserDom.h>
+#include <htmlcxx/html/utils.h>
 
 using namespace std;
+using namespace htmlcxx;
 
 class UrlCorpus
 {
@@ -15,9 +18,11 @@ public:
 
 private:
     static size_t writeCallback(char* contents, size_t size, size_t nmemb, string* userp);
-    string getHtml(const char* url);
+    string getHtml(const char* url, char** effurl);
+    map<string, string> getUrls(string& html, char* effurl);
 
     CURL* curl;
+    HTML::ParserDom parser;
 };
 
 
