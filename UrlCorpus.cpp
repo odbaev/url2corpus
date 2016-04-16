@@ -113,8 +113,10 @@ void UrlCorpus::writeCorpusInfo(const char* path, char* url, map<string, string>
 
     out << url << "\n" << endl;
 
+    int i = 1;
     for(map<string, string>::iterator it = urls.begin(); it != urls.end(); it++)
     {
+        out << "File: " << i++ << ".txt" << endl;
         out << "URL: " << it->first << endl;
         out << "Description: " << it->second << "\n" << endl;
     }
