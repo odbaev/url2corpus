@@ -16,7 +16,6 @@ UrlCorpus::~UrlCorpus()
     curl_easy_cleanup(curl);
 }
 
-
 void UrlCorpus::getCorpus(string url, string path)
 {
     string html = getHtml(url);
@@ -130,11 +129,47 @@ map<string, string> UrlCorpus::getUrls(string& html, string main_url)
     return urls;
 }
 
-string UrlCorpus::getArticle(string html)
+string UrlCorpus::getArticle(string& html)
 {
+    const int MIN_ARTICLE_SIZE = 500;
+    const int MIN_ARTICLE_SIZE_UTF8 = MIN_ARTICLE_SIZE * 2;
+
     string article;
 
+    tree<HTML::Node> dom = parser.parseTree(html);
 
+    for(tree<HTML::Node>::iterator it = dom.begin(); it != dom.end(); it++)
+    {
+        if (it->tagName() == "p")
+        {
+            article = "";
+
+            it = dom.parent(it);
+            for(tree<HTML::Node>::iterator p = it.begin(); p != it.end(); p++)
+            {
+                if (p->tagName() == "script")
+                {
+                    p.skip_children();
+                    continue;
+                }
+
+                if (!p->isTag() && !p->isComment())
+                {
+                    article += p->text();
+                }
+            }
+
+            article = HTML::single_blank(article);
+
+            if (HTML::detect_utf8(article.c_str(), (int)article.size()))
+            {
+                if (article.size() > MIN_ARTICLE_SIZE_UTF8) break;
+            }
+            else if (article.size() > MIN_ARTICLE_SIZE) break;
+
+            it.skip_children();
+        }
+    }
 
     return article;
 }
@@ -155,16 +190,3 @@ void UrlCorpus::writeCorpusInfo(string path, string main_url, map<string, string
 
     out.close();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
