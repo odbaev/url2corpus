@@ -36,7 +36,7 @@ void UrlCorpus::getCorpus(string url, string path)
     curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effurl);
 
     url = effurl;
-    url.pop_back();
+    url.erase(url.find('/', url.find("://") + 3));
 
     map<string, string> urls = getUrls(html, url);
 
