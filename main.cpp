@@ -8,11 +8,20 @@ int main(int argc, char** argv)
 {
     if (argc < 3)
     {
-        cout << "usage: url2corpus url corpus_path";
+        cout << "Usage: ./url2corpus url corpus_path" << endl;
         return 0;
     }
 
     UrlCorpus urlcorp;
 
-    urlcorp.getCorpus(argv[1], argv[2]);
+    try
+    {
+        urlcorp.getCorpus(argv[1], argv[2]);
+    }
+    catch (const invalid_argument& ia)
+    {
+        cerr << "Error: " << ia.what() << endl;
+    }
+
+    return 0;
 }

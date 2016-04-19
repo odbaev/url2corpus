@@ -20,6 +20,18 @@ void UrlCorpus::getCorpus(string url, string path)
 {
     string html = getHtml(url);
 
+    if (html.empty())
+    {
+        throw invalid_argument("Incorrect URL");
+    }
+
+    int status = mkdir(path.c_str(), ACCESSPERMS);
+
+    if (status != 0)
+    {
+        throw invalid_argument("The specified path does not exist");
+    }
+
     char* effurl;
     curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effurl);
 
@@ -27,8 +39,6 @@ void UrlCorpus::getCorpus(string url, string path)
     url.pop_back();
 
     map<string, string> urls = getUrls(html, url);
-
-    mkdir(path.c_str(), ACCESSPERMS);
 
     string article;
 
@@ -69,7 +79,9 @@ string UrlCorpus::getHtml(string url)
 
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &html);
-    curl_easy_perform(curl);
+    CURLcode code = curl_easy_perform(curl);
+
+    if (code != CURLE_OK) return "";
 
     return html;
 }
