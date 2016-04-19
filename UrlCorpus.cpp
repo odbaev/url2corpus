@@ -24,6 +24,7 @@ void UrlCorpus::getCorpus(string url, string path)
     curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effurl);
 
     url = effurl;
+    url.pop_back();
 
     map<string, string> urls = getUrls(html, url);
 
@@ -95,7 +96,7 @@ map<string, string> UrlCorpus::getUrls(string& html, string main_url)
                 {
                     if (url.find_last_of("#?;") == string::npos)
                     {
-                        if (absurl) url.erase(0, main_url.length() - 1);
+                        if (absurl) url.erase(0, main_url.length());
 
                         long slashes = count(url.begin(), url.end(), '/');
 
@@ -133,6 +134,7 @@ string UrlCorpus::getArticle(string& html)
 {
     const int MIN_ARTICLE_SIZE = 500;
     const int MIN_ARTICLE_SIZE_UTF8 = MIN_ARTICLE_SIZE * 2;
+    const int PARAGRAPH_MATCH_SIZE = 150;
 
     string article;
 
@@ -140,14 +142,20 @@ string UrlCorpus::getArticle(string& html)
 
     for(tree<HTML::Node>::iterator it = dom.begin(); it != dom.end(); it++)
     {
-        if (it->tagName() == "p")
+        if (it->tagName() == "script" || it->tagName() == "style" || it->tagName() == "noindex")
+        {
+            it.skip_children();
+            continue;
+        }
+
+        if (it->tagName() == "p" || !it->isTag() && !it->isComment() && it->length() > PARAGRAPH_MATCH_SIZE)
         {
             article = "";
 
             it = dom.parent(it);
             for(tree<HTML::Node>::iterator p = it.begin(); p != it.end(); p++)
             {
-                if (p->tagName() == "script")
+                if (p->tagName() == "script" || p->tagName() == "div" || p->tagName() == "aside")
                 {
                     p.skip_children();
                     continue;
@@ -155,23 +163,26 @@ string UrlCorpus::getArticle(string& html)
 
                 if (!p->isTag() && !p->isComment())
                 {
-                    article += p->text();
+                    article += HTML::single_blank(p->text());
                 }
+                else if (p->tagName() == "p" || p->tagName() == "h1" || p->tagName() == "h2") article += "\n\n";
             }
 
-            article = HTML::single_blank(article);
+            article.erase(article.begin(), find_if_not(article.begin(), article.end(), [](int c) { return isspace(c); }));
+
+            article = HTML::decode_entities(article);
 
             if (HTML::detect_utf8(article.c_str(), (int)article.size()))
             {
-                if (article.size() > MIN_ARTICLE_SIZE_UTF8) break;
+                if (article.size() > MIN_ARTICLE_SIZE_UTF8) return article;
             }
-            else if (article.size() > MIN_ARTICLE_SIZE) break;
+            else if (article.size() > MIN_ARTICLE_SIZE) return article;
 
             it.skip_children();
         }
     }
 
-    return article;
+    return "";
 }
 
 void UrlCorpus::writeCorpusInfo(string path, string main_url, map<string, string>& urls)
