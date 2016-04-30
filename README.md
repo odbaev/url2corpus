@@ -20,7 +20,7 @@ Then you can build **url2corpus** by typing:
 
     $ ./url2corpus url corpus_path
 
-*url*: url of the page with links to pages containing some text information
+*url*: url of the page with links to pages containing some text information  
 *corpus_path*: existing path to save corpus
 
 For example:
