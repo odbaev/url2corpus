@@ -1,7 +1,7 @@
 #include "UrlCorpus.h"
 #include <algorithm>
 #include <fstream>
-#include <sys/stat.h>
+#include <unistd.h>
 
 
 UrlCorpus::UrlCorpus()
@@ -25,9 +25,7 @@ void UrlCorpus::getCorpus(string url, string path)
         throw invalid_argument("Incorrect URL");
     }
 
-    int status = mkdir(path.c_str(), ACCESSPERMS);
-
-    if (status != 0)
+    if (access(path.c_str(), F_OK) != 0)
     {
         throw invalid_argument("The specified path does not exist");
     }
