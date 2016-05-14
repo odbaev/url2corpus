@@ -152,7 +152,8 @@ string UrlCorpus::getArticle(string& html)
 
     for(tree<HTML::Node>::iterator it = dom.begin(); it != dom.end(); it++)
     {
-        if (it->tagName() == "script" || it->tagName() == "style" || it->tagName() == "noindex")
+        if (it->tagName() == "script" || it->tagName() == "style" ||
+            it->tagName() == "noindex" || it->tagName() == "footer")
         {
             it.skip_children();
             continue;
