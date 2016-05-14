@@ -29,6 +29,7 @@ For example:
 
 As a result there will be text corpus with its description file *corpus-info.txt* in the specified path.
 
-## Author
+## Contributors
 
 * Oleg Baev
+* Mstislav Maslennikov
