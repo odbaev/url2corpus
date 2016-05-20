@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <fstream>
 #include <unistd.h>
+#include <iconv.h>
 
 
 UrlCorpus::UrlCorpus()
@@ -88,6 +89,27 @@ string UrlCorpus::getHtml(string url)
     return html;
 }
 
+string UrlCorpus::cp1251_to_utf8(string text)
+{
+    iconv_t conv = iconv_open("UTF-8", "CP1251");
+
+    size_t insize = text.size();
+    size_t outsize = insize * 2;
+
+    char* res = new char[outsize + 1]();
+    char* inbuf = (char*)text.c_str();
+    char* outbuf = res;
+
+    iconv(conv, &inbuf, &insize, &outbuf, &outsize);
+    iconv_close(conv);
+
+    string utf8text = string(res);
+
+    delete[] res;
+
+    return utf8text;
+}
+
 map<string, string> UrlCorpus::getUrls(string& html, string main_url)
 {
     map<string, string> urls;
@@ -126,6 +148,11 @@ map<string, string> UrlCorpus::getUrls(string& html, string main_url)
                         if (!desc.empty())
                         {
                             desc = HTML::decode_entities(desc);
+
+                            if (!HTML::detect_utf8(desc.c_str(), (int)desc.size()))
+                            {
+                                desc = cp1251_to_utf8(desc);
+                            }
 
                             urls.insert(make_pair(url, desc));
                         }
@@ -185,7 +212,10 @@ string UrlCorpus::getArticle(string& html)
             {
                 if (article.size() > MIN_ARTICLE_SIZE_UTF8) return article;
             }
-            else if (article.size() > MIN_ARTICLE_SIZE) return article;
+            else if (article.size() > MIN_ARTICLE_SIZE)
+            {
+                return cp1251_to_utf8(article);
+            }
 
             it.skip_children();
         }

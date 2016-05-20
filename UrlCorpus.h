@@ -19,6 +19,7 @@ public:
 private:
     static size_t writeCallback(char* contents, size_t size, size_t nmemb, string* userp);
     string getHtml(string url);
+    string cp1251_to_utf8(string text);
     map<string, string> getUrls(string& html, string main_url);
     string getArticle(string& html);
     void writeCorpusInfo(string path, string main_url, map<string, string>& urls);
