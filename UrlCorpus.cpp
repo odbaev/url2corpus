@@ -35,6 +35,7 @@ void UrlCorpus::getCorpus(string url, string path)
 
     url = effurl;
     url.erase(url.find('/', url.find("://") + 3));
+    transform(url.begin(), url.end(), url.begin(), ::tolower);
 
     map<string, string> urls = getUrls(html, url);
 
@@ -102,34 +103,28 @@ map<string, string> UrlCorpus::getUrls(string& html, string main_url)
 
                 bool absurl = url.compare(0, main_url.length(), main_url) == 0;
 
-                if (url.length() > 1 && url.front() == '/' || absurl)
+                if (absurl) url.erase(0, main_url.length());
+
+                if (url.length() > 1 && url.front() == '/' && url[1] != '/')
                 {
-                    if (url.find_last_of("#?;") == string::npos)
+                    if (url.find_last_of("#;") == string::npos)
                     {
-                        if (absurl) url.erase(0, main_url.length());
-
-                        long slashes = count(url.begin(), url.end(), '/');
-
-                        if (slashes > 2 || slashes == 2 && url.back() != '/')
+                        desc = "";
+                        for(tree<HTML::Node>::iterator p = it.begin(); p != it.end(); p++)
                         {
-                            desc = "";
-                            for(tree<HTML::Node>::sibling_iterator sit = dom.begin(it); sit != dom.end(it); sit++)
+                            if (!p->isTag() && !p->isComment())
                             {
-                                if (!sit->isTag() && !sit->isComment())
-                                {
-                                    desc = sit->text();
-                                    break;
-                                }
+                                desc += p->text();
                             }
+                        }
 
-                            desc = HTML::single_blank(desc);
+                        desc = HTML::single_blank(desc);
 
-                            if (!desc.empty())
-                            {
-                                desc = HTML::decode_entities(desc);
+                        if (!desc.empty())
+                        {
+                            desc = HTML::decode_entities(desc);
 
-                                urls.insert(make_pair(url, desc));
-                            }
+                            urls.insert(make_pair(url, desc));
                         }
                     }
                 }
