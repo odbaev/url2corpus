@@ -41,9 +41,12 @@ void UrlCorpus::getCorpus(string url, string path)
 
     string article;
 
-    int i = 1;
+    long i = 1, j = 1, total = urls.size();
+
     for(map<string, string>::iterator it = urls.begin(); it != urls.end();)
     {
+        cout << "checking page " << j++ << "/" << total << endl;
+
         html = getHtml(url + it->first);
 
         article = getArticle(html);
