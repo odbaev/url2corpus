@@ -191,7 +191,8 @@ string UrlCorpus::getArticle(string& html)
             it = dom.parent(it);
             for(tree<HTML::Node>::iterator p = it.begin(); p != it.end(); p++)
             {
-                if (p->tagName() == "script" || p->tagName() == "div" || p->tagName() == "aside")
+                if (p->tagName() == "script" || p->tagName() == "style" ||
+                    p->tagName() == "div" || p->tagName() == "aside")
                 {
                     p.skip_children();
                     continue;
